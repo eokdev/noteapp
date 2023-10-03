@@ -23,6 +23,7 @@ class MyApp extends ConsumerWidget {
     ));
     return MaterialApp.router(
       title: 'Note Taking',
+     
       debugShowCheckedModeBanner: false,
       color: randomColor,
       supportedLocales: const [

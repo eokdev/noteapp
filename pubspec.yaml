@@ -40,7 +40,9 @@ dependencies:
   intl: ^0.18.1
   flutter_quill: ^7.4.9
   flutter_riverpod: ^2.3.6
+  shared_preferences: ^2.0.18
   flutter_launcher_icons: ^0.13.0
+  date_picker_timeline: ^1.2.5
 
 
 

@@ -8,9 +8,12 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:noteapp/constants/appColors.dart';
 import 'package:noteapp/constants/styleConst.dart';
+import 'package:noteapp/models/categoryModel.dart';
 import 'package:noteapp/models/noteDataModel.dart';
+import 'package:noteapp/routes/routeNames.dart';
 import 'package:noteapp/services/darkModeServices.dart';
 import 'package:noteapp/utils/colorsLogic.dart';
+import 'package:noteapp/utils/dateLogics.dart';
 import 'package:noteapp/utils/lists.dart';
 import 'package:noteapp/widgets/datePicker.dart';
 import 'package:noteapp/widgets/spacing.dart';
@@ -36,9 +39,9 @@ class _HomePageState extends ConsumerState<HomePage> {
         colors: getRandomColor(),
         creationDate: DateTime.now(),
         modifiedDate: DateTime.now(),
-        title: "Procreation",
+        title: "Procreation & title planning",
         content:
-            "I am trying to do something really special today so if you are seeing this message just know that they are things that are about to be broadcasted to be one or more to the eligiblilty of yuour service in our instititue i am very muxch pleased to be doing this with you guys, just han",
+            "I am trying to do something nah this was so much fun that i cant even procreate where i started to getthis awesome feelings mehn damn really special today so if you are seeing this message just know that they are things that are about to be broadcasted to be one or more to the eligiblilty of yuour service in our instititue i am very muxch pleased to be doing this with you guys, just han",
       ),
       NoteDataModel(
         colors: getRandomColor(),
@@ -70,7 +73,7 @@ class _HomePageState extends ConsumerState<HomePage> {
         modifiedDate: DateTime.now(),
         title: "Fun",
         content:
-            "I am trying to do something really special today so if you are seeing this message just know that they are things that are about to be broadcasted to be one or more to the eligiblilty of yuour service in our instititue i am very muxch pleased to be doing this with you guys, just han",
+            "I am trying to do something really special today dam i aave been tryinh to so if you are seeing this message just know that they are things that are about to be broadcasted to be one or more to the eligiblilty of yuour service in our instititue i am very muxch pleased to be doing this with you guys, just han",
       ),
       NoteDataModel(
         colors: getRandomColor(),
@@ -91,7 +94,18 @@ class _HomePageState extends ConsumerState<HomePage> {
         child: Scaffold(
           backgroundColor: darkMode ? black : white,
           floatingActionButton: FloatingActionButton(
-            onPressed: () {},
+            onPressed: () {
+              final initialNote = NoteDataModel(
+                id: 0,
+                colors: black,
+                title: 'Initial Title',
+                content: 'Initial Content',
+                category: CategoryModel(id: 0, title: ""),
+                creationDate: DateTime.now(),
+                modifiedDate: DateTime.now(),
+              );
+              context.pushNamed(RouteName.EDITPAGE, extra: initialNote);
+            },
             backgroundColor: black,
             child: const Center(
               child: Icon(Icons.add),
@@ -188,7 +202,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                 ),
                 child: TextFormField(
                   cursorColor: black.withOpacity(0.3),
-                  style: genStyle(ref),
+                  style: genStyle(ref).copyWith(color: black),
                   decoration: InputDecoration(
                     hintText: "Search for notes",
                     hintStyle: genStyle(ref).copyWith(
@@ -272,28 +286,47 @@ class _HomePageState extends ConsumerState<HomePage> {
                     shrinkWrap: true,
                     itemBuilder: (context, index) {
                       final item = model[index];
-                      return Container(
-                        padding: const EdgeInsets.all(15),
-                        decoration: BoxDecoration(
-                          color: item.colors,
-                          borderRadius: BorderRadius.circular(15),
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              item.title ?? "",
-                              style: genStyle(ref).copyWith(fontWeight: FontWeight.bold),
-                            ),
-                            sizedBoxHeight(5),
-                            Expanded(
-                              child: Text(
-                                item.content ?? "",
-                                style: genStyle(ref).copyWith(fontSize: 12),
-                                overflow: TextOverflow.fade,
+                      return GestureDetector(
+                        onTap: () {
+                          context.pushNamed(RouteName.VIEWPAGE, extra: item);
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.all(15),
+                          decoration: BoxDecoration(
+                            color: item.colors,
+                            borderRadius: BorderRadius.circular(15),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                formatMyDate(
+                                  item.creationDate ?? DateTime.now(),
+                                ),
+                                style: genStyle(ref).copyWith(
+                                  fontSize: 10,
+                                  color: black,
+                                  fontStyle: FontStyle.italic,
+                                ),
                               ),
-                            )
-                          ],
+                              sizedBoxHeight(5),
+                              Text(
+                                item.title ?? "",
+                                style: genStyle(ref).copyWith(
+                                  fontWeight: FontWeight.bold,
+                                  color: black,
+                                ),
+                              ),
+                              sizedBoxHeight(5),
+                              Expanded(
+                                child: Text(
+                                  item.content ?? "",
+                                  style: genStyle(ref).copyWith(fontSize: 12, color: black),
+                                  overflow: TextOverflow.fade,
+                                ),
+                              )
+                            ],
+                          ),
                         ),
                       );
                     }),

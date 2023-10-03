@@ -2,5 +2,6 @@
 
 class RouteName {
   static const HOMEPAGE = "homepage";
-  
+  static const VIEWPAGE = "viewpage";
+  static const EDITPAGE = "editpage";
 }

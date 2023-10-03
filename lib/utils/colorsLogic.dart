@@ -14,7 +14,7 @@ Color getRandomColor() {
     const Color(0xffFFD8F9),
     const Color(0xffFBF6AA),
     const Color(0xffB0E96A),
-    // const Color(0xffFCFADA),
+    const Color(0xffFCFADA),
     const Color(0xffF1DBF5),
     const Color(0xffD9E8FC),
     const Color(0xffFFDBE3),
@@ -34,6 +34,7 @@ Color getBorderColor(bool isSelected, bool darkMode) {
       return Colors.transparent;
   }
 }
+
 Color getBorder(bool isSelected, bool darkMode) {
   switch (isSelected) {
     case true:

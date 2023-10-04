@@ -304,8 +304,8 @@ class _HomePageState extends ConsumerState<HomePage> {
                   children: [
                     Center(
                       child: SizedBox(
-                        height: 100,
-                        width: 100,
+                        height: 50,
+                        width: 50,
                         child: CircularProgressIndicator(
                           color: getRandomColor(),
                         ),

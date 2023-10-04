@@ -1,3 +1,5 @@
+// ignore_for_file: unused_result
+
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
@@ -12,6 +14,7 @@ import 'package:noteapp/models/noteDataModel.dart';
 import 'package:noteapp/routes/routeNames.dart';
 import 'package:noteapp/services/darkModeServices.dart';
 import 'package:noteapp/services/noteDataManagement.dart';
+import 'package:noteapp/services/pdfsharing.dart';
 import 'package:noteapp/utils/colorsLogic.dart';
 import 'package:noteapp/utils/lists.dart';
 import 'package:noteapp/utils/snackbars.dart';
@@ -72,8 +75,11 @@ class _EditNotePageState extends ConsumerState<EditNotePage> {
                   ref.read(checker.notifier).state = ref.watch(genNoteData)!.category!.id! - 1;
                 }
                 final json = _controller.document.toDelta().toJson();
+               
                 String content = _controller.document.toPlainText();
-
+                //continue here
+              
+               
                 showCategoryModal(
                     body: json,
                     content: content,
@@ -369,23 +375,25 @@ class _EditNotePageState extends ConsumerState<EditNotePage> {
                         GestureDetector(
                           onTap: () {
                             if (widget.noteData.creationDate == null) {
-                              final newNote = NoteDataModel(
-                                  title: title.isEmpty ? "No Title" : title,
-                                  content: content,
-                                  body: body,
-                                  category: ref.watch(selectedCategory),
-                                  creationDate: DateTime.now(),
-                                  modifiedDate: DateTime.now(),
-                                  colors: getRandomColor());
-                              ref.read(notesNotifierProvider.notifier).addNote(newNote).then((value) {
-                                ref.refresh(getNotesProvider);
-                                snackBar(
-                                  content: "Note Added Successfully",
-                                  context: context,
-                                  backgroundColor: Colors.green,
-                                );
-                                context.pushReplacementNamed(RouteName.HOMEPAGE);
-                              });
+                              if (ref.watch(selectedCategory) != null) {
+                                final newNote = NoteDataModel(
+                                    title: title.isEmpty ? "No Title" : title,
+                                    content: content,
+                                    body: body,
+                                    category: ref.watch(selectedCategory),
+                                    creationDate: DateTime.now(),
+                                    modifiedDate: DateTime.now(),
+                                    colors: getRandomColor());
+                                ref.read(notesNotifierProvider.notifier).addNote(newNote).then((value) {
+                                  ref.refresh(getNotesProvider);
+                                  snackBar(
+                                    content: "Note Added Successfully☑️",
+                                    context: context,
+                                    backgroundColor: Colors.green,
+                                  );
+                                  context.pushReplacementNamed(RouteName.HOMEPAGE);
+                                });
+                              }
                             } else {
                               final newNote = NoteDataModel(
                                   id: widget.noteData.id,
@@ -411,7 +419,7 @@ class _EditNotePageState extends ConsumerState<EditNotePage> {
                             height: 40,
                             margin: const EdgeInsets.only(left: 20, right: 20),
                             decoration: BoxDecoration(
-                              color: black,
+                              color: ref.watch(selectedCategory) == null ? black.withOpacity(0.3) : black,
                               borderRadius: BorderRadius.circular(10),
                             ),
                             width: double.infinity,

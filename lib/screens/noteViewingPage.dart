@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -7,9 +9,14 @@ import 'package:noteapp/models/noteDataModel.dart';
 import 'package:noteapp/routes/routeNames.dart';
 import 'package:noteapp/screens/editNotePage.dart';
 import 'package:noteapp/services/noteDataManagement.dart';
+import 'package:noteapp/services/pdfsharing.dart';
+import 'package:noteapp/utils/colorsLogic.dart';
 import 'package:noteapp/utils/dateLogics.dart';
 import 'package:noteapp/utils/snackbars.dart';
 import 'package:noteapp/widgets/spacing.dart';
+import 'package:flutter_quill/flutter_quill.dart' as quill;
+
+final shareLoading = StateProvider<bool>((ref) => false);
 
 class NoteViewingPage extends ConsumerStatefulWidget {
   final NoteDataModel noteData;
@@ -20,6 +27,17 @@ class NoteViewingPage extends ConsumerStatefulWidget {
 }
 
 class _NoteViewingPageState extends ConsumerState<NoteViewingPage> {
+  quill.QuillController _controller = quill.QuillController.basic();
+
+  @override
+  void initState() {
+    _controller = quill.QuillController(
+      document: quill.Document.fromJson(widget.noteData.body!),
+      selection: const TextSelection.collapsed(offset: 0),
+    );
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
     return SafeArea(
@@ -52,14 +70,46 @@ class _NoteViewingPageState extends ConsumerState<NoteViewingPage> {
                 color: black,
               ),
             ),
-            IconButton(
-              onPressed: () {},
-              tooltip: "Share",
-              icon: const Icon(
-                Icons.file_upload_outlined,
-                color: black,
-              ),
-            ),
+            Consumer(builder: (context, ref, child) {
+              final loading = ref.watch(shareLoading);
+              ref.listen(shareProviderRes, (previous, next) {
+                if (next == "Yes") {
+                  ref.read(shareProviderRes.notifier).state = "";
+                  ref.read(shareLoading.notifier).state = false;
+                } else {
+                  ref.read(shareProviderRes.notifier).state = "";
+                  ref.read(shareLoading.notifier).state = false;
+                }
+              });
+              return loading
+                  ? SizedBox(
+                      height: 20,
+                      width: 20,
+                      child: CircularProgressIndicator(
+                        color: getRandomColor(),
+                      ),
+                    )
+                  : IconButton(
+                      onPressed: () {
+                        // final json = _controller.document.toDelta().toJson();
+                        ref.read(shareLoading.notifier).state = true;
+                        String content = _controller.document.toPlainText();
+                        final datas = ShareResModel(
+                          context,
+                          content,
+                          widget.noteData.title,
+                        );
+                        ref.read(
+                          share(datas),
+                        );
+                      },
+                      tooltip: "Share",
+                      icon: const Icon(
+                        Icons.file_upload_outlined,
+                        color: black,
+                      ),
+                    );
+            }),
             IconButton(
               onPressed: () {
                 ref.read(notesNotifierProvider.notifier).deleteNote(widget.noteData).then((value) {
@@ -86,7 +136,7 @@ class _NoteViewingPageState extends ConsumerState<NoteViewingPage> {
             Padding(
               padding: const EdgeInsets.only(left: 15, right: 15),
               child: Text(
-                "Created: ${formatMyDate(widget.noteData.creationDate ?? DateTime.now())}",
+                "Created: ${widget.noteData.creationDate}",
                 style: genStyle(ref).copyWith(
                   color: black.withOpacity(0.6),
                   fontStyle: FontStyle.italic,
@@ -98,7 +148,7 @@ class _NoteViewingPageState extends ConsumerState<NoteViewingPage> {
             Padding(
               padding: const EdgeInsets.only(left: 15, right: 15),
               child: Text(
-                "Modified: ${formatMyDate(widget.noteData.modifiedDate ?? DateTime.now())}",
+                "Modified: ${widget.noteData.modifiedDate}",
                 style: genStyle(ref).copyWith(
                   color: black.withOpacity(0.6),
                   fontStyle: FontStyle.italic,

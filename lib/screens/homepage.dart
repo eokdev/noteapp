@@ -11,7 +11,9 @@ import 'package:noteapp/constants/styleConst.dart';
 import 'package:noteapp/models/categoryModel.dart';
 import 'package:noteapp/models/noteDataModel.dart';
 import 'package:noteapp/routes/routeNames.dart';
+import 'package:noteapp/screens/editNotePage.dart';
 import 'package:noteapp/services/darkModeServices.dart';
+import 'package:noteapp/services/noteDataManagement.dart';
 import 'package:noteapp/utils/colorsLogic.dart';
 import 'package:noteapp/utils/dateLogics.dart';
 import 'package:noteapp/utils/lists.dart';
@@ -34,56 +36,7 @@ class _HomePageState extends ConsumerState<HomePage> {
   @override
   Widget build(BuildContext context) {
     final darkMode = ref.watch(darkModeProvider);
-    List<NoteDataModel> model = [
-      NoteDataModel(
-        colors: getRandomColor(),
-        creationDate: DateTime.now(),
-        modifiedDate: DateTime.now(),
-        title: "Procreation & title planning",
-        content:
-            "I am trying to do something nah this was so much fun that i cant even procreate where i started to getthis awesome feelings mehn damn really special today so if you are seeing this message just know that they are things that are about to be broadcasted to be one or more to the eligiblilty of yuour service in our instititue i am very muxch pleased to be doing this with you guys, just han",
-      ),
-      NoteDataModel(
-        colors: getRandomColor(),
-        creationDate: DateTime.now(),
-        modifiedDate: DateTime.now(),
-        title: "Events",
-        content:
-            "I am trying to do something really special today so if you are seeing this message just know that they are things that are about to be broadcasted to be one or more to the eligiblilty of yuour service in our instititue i am very muxch pleased to be doing this with you guys, just han",
-      ),
-      NoteDataModel(
-        colors: getRandomColor(),
-        creationDate: DateTime.now(),
-        modifiedDate: DateTime.now(),
-        title: "Kitchen",
-        content:
-            "I am trying to do something really special today so if you are seeing this message just know that they are things that are about to be broadcasted to be one or more to the eligiblilty of yuour service in our instititue i am very muxch pleased to be doing this with you guys, just han",
-      ),
-      NoteDataModel(
-        colors: getRandomColor(),
-        creationDate: DateTime.now(),
-        modifiedDate: DateTime.now(),
-        title: "Game",
-        content:
-            "I am trying to do something really special today so if you are seeing this message just know that they are things that are about to be broadcasted to be one or more to the eligiblilty of yuour service in our instititue i am very muxch pleased to be doing this with you guys, just han",
-      ),
-      NoteDataModel(
-        colors: getRandomColor(),
-        creationDate: DateTime.now(),
-        modifiedDate: DateTime.now(),
-        title: "Fun",
-        content:
-            "I am trying to do something really special today dam i aave been tryinh to so if you are seeing this message just know that they are things that are about to be broadcasted to be one or more to the eligiblilty of yuour service in our instititue i am very muxch pleased to be doing this with you guys, just han",
-      ),
-      NoteDataModel(
-        colors: getRandomColor(),
-        creationDate: DateTime.now(),
-        modifiedDate: DateTime.now(),
-        title: "Creation",
-        content:
-            "I am trying to do something really special today so if you are seeing this message just know that they are things that are about to be broadcasted to be one or more to the eligiblilty of yuour service in our instititue i am very muxch pleased to be doing this with you guys, just han",
-      ),
-    ];
+    final getNotes = ref.watch(getNotesProvider);
     final year = DateFormat('yyyy').format(today);
     final month = DateFormat('MMMM').format(today);
     return SafeArea(
@@ -98,11 +51,11 @@ class _HomePageState extends ConsumerState<HomePage> {
               final initialNote = NoteDataModel(
                 id: 0,
                 colors: black,
-                title: 'Initial Title',
-                content: 'Initial Content',
+                title: '',
+                content: '',
                 category: CategoryModel(id: 0, title: ""),
-                creationDate: DateTime.now(),
-                modifiedDate: DateTime.now(),
+                creationDate: null,
+                modifiedDate: null,
               );
               context.pushNamed(RouteName.EDITPAGE, extra: initialNote);
             },
@@ -272,65 +225,110 @@ class _HomePageState extends ConsumerState<HomePage> {
                 ),
               ),
               sizedBoxHeight(10),
-              Expanded(
-                child: GridView.builder(
-                    padding: const EdgeInsets.only(left: 15, right: 15, top: 10, bottom: 10),
-                    itemCount: model.length,
-                    physics: const BouncingScrollPhysics(),
-                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 2,
-                      mainAxisSpacing: 15,
-                      crossAxisSpacing: 15,
-                      mainAxisExtent: 180,
-                    ),
-                    shrinkWrap: true,
-                    itemBuilder: (context, index) {
-                      final item = model[index];
-                      return GestureDetector(
-                        onTap: () {
-                          context.pushNamed(RouteName.VIEWPAGE, extra: item);
-                        },
-                        child: Container(
-                          padding: const EdgeInsets.all(15),
-                          decoration: BoxDecoration(
-                            color: item.colors,
-                            borderRadius: BorderRadius.circular(15),
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                formatMyDate(
-                                  item.creationDate ?? DateTime.now(),
+              getNotes.when(data: (data) {
+                return data.isEmpty
+                    ? Expanded(
+                        child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Text(
+                            "You have no Note\nAdd a new note ➕",
+                            style: genStyle(ref),
+                          )
+                        ],
+                      ))
+                    : Expanded(
+                        child: GridView.builder(
+                            padding: const EdgeInsets.only(left: 15, right: 15, top: 10, bottom: 10),
+                            itemCount: data.length,
+                            physics: const BouncingScrollPhysics(),
+                            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                              crossAxisCount: 2,
+                              mainAxisSpacing: 15,
+                              crossAxisSpacing: 15,
+                              mainAxisExtent: 180,
+                            ),
+                            shrinkWrap: true,
+                            itemBuilder: (context, index) {
+                              final item = data[index];
+                              return GestureDetector(
+                                onTap: () {
+                                  ref.read(genNoteData.notifier).state = item;
+                                  context.pushNamed(RouteName.VIEWPAGE, extra: item);
+                                },
+                                child: Container(
+                                  padding: const EdgeInsets.all(15),
+                                  decoration: BoxDecoration(
+                                    color: item.colors,
+                                    borderRadius: BorderRadius.circular(15),
+                                  ),
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        formatMyDate(
+                                          item.creationDate ?? DateTime.now(),
+                                        ),
+                                        style: genStyle(ref).copyWith(
+                                          fontSize: 10,
+                                          color: black,
+                                          fontStyle: FontStyle.italic,
+                                        ),
+                                      ),
+                                      sizedBoxHeight(5),
+                                      Text(
+                                        item.title ?? "",
+                                        style: genStyle(ref).copyWith(
+                                          fontWeight: FontWeight.bold,
+                                          color: black,
+                                        ),
+                                      ),
+                                      sizedBoxHeight(5),
+                                      Expanded(
+                                        child: Text(
+                                          item.content ?? "",
+                                          style: genStyle(ref).copyWith(fontSize: 12, color: black),
+                                          overflow: TextOverflow.fade,
+                                        ),
+                                      )
+                                    ],
+                                  ),
                                 ),
-                                style: genStyle(ref).copyWith(
-                                  fontSize: 10,
-                                  color: black,
-                                  fontStyle: FontStyle.italic,
-                                ),
-                              ),
-                              sizedBoxHeight(5),
-                              Text(
-                                item.title ?? "",
-                                style: genStyle(ref).copyWith(
-                                  fontWeight: FontWeight.bold,
-                                  color: black,
-                                ),
-                              ),
-                              sizedBoxHeight(5),
-                              Expanded(
-                                child: Text(
-                                  item.content ?? "",
-                                  style: genStyle(ref).copyWith(fontSize: 12, color: black),
-                                  overflow: TextOverflow.fade,
-                                ),
-                              )
-                            ],
-                          ),
-                        ),
+                              );
+                            }),
                       );
-                    }),
-              )
+              }, error: (err, stacktrace) {
+                return Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Center(
+                      child: SizedBox(
+                        height: 100,
+                        width: 100,
+                        child: CircularProgressIndicator(
+                          color: getRandomColor(),
+                        ),
+                      ),
+                    ),
+                  ],
+                );
+              }, loading: () {
+                return Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Center(
+                      child: SizedBox(
+                        height: 100,
+                        width: 100,
+                        child: CircularProgressIndicator(
+                          color: getRandomColor(),
+                        ),
+                      ),
+                    ),
+                  ],
+                );
+              })
             ],
           ),
         ),

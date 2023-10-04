@@ -7,12 +7,18 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:noteapp/constants/appColors.dart';
 import 'package:noteapp/constants/styleConst.dart';
+import 'package:noteapp/models/categoryModel.dart';
 import 'package:noteapp/models/noteDataModel.dart';
+import 'package:noteapp/routes/routeNames.dart';
 import 'package:noteapp/services/darkModeServices.dart';
+import 'package:noteapp/services/noteDataManagement.dart';
+import 'package:noteapp/utils/colorsLogic.dart';
+import 'package:noteapp/utils/lists.dart';
+import 'package:noteapp/utils/snackbars.dart';
 import 'package:noteapp/widgets/spacing.dart';
 
 class EditNotePage extends ConsumerStatefulWidget {
-  final NoteDataModel? noteData;
+  final NoteDataModel noteData;
   const EditNotePage({super.key, required this.noteData});
 
   @override
@@ -21,14 +27,23 @@ class EditNotePage extends ConsumerStatefulWidget {
 
 class _EditNotePageState extends ConsumerState<EditNotePage> {
   quill.QuillController _controller = quill.QuillController.basic();
-  var myJSON = jsonDecode(r'[{"insert":"hyugyfkvyfjty jhvuky\n"}]');
+  var myJSON = jsonDecode(r'[{"insert":"Type Something...\n"}]');
+  final titleController = TextEditingController();
   @override
   void initState() {
+    titleController.text = widget.noteData.title ?? "";
     _controller = quill.QuillController(
-      document: quill.Document.fromJson(myJSON),
+      document: quill.Document.fromJson(widget.noteData.body ?? myJSON),
       selection: const TextSelection.collapsed(offset: 0),
     );
     super.initState();
+  }
+
+  @override
+  void dispose() {
+    titleController.dispose();
+    _controller.dispose();
+    super.dispose();
   }
 
   @override
@@ -51,9 +66,23 @@ class _EditNotePageState extends ConsumerState<EditNotePage> {
           actions: [
             IconButton(
               onPressed: () {
-                var json = jsonEncode(_controller.document.toDelta().toJson());
-                print(json);
-                showCategoryModal(context, ref);
+                FocusScope.of(context).unfocus();
+                if (ref.watch(genNoteData) != null) {
+                  ref.read(selectedCategory.notifier).state = ref.watch(genNoteData)!.category;
+                  ref.read(checker.notifier).state = ref.watch(genNoteData)!.category!.id! - 1;
+                }
+                final json = _controller.document.toDelta().toJson();
+                String content = _controller.document.toPlainText();
+
+                showCategoryModal(
+                    body: json,
+                    content: content,
+                    context: context,
+                    creation: DateTime.now(),
+                    modified: DateTime.now(),
+                    ref: ref,
+                    title: titleController.text,
+                    color: getRandomColor());
               },
               tooltip: "Save Note",
               icon: const Icon(
@@ -71,14 +100,25 @@ class _EditNotePageState extends ConsumerState<EditNotePage> {
                 color: black,
               ),
             ),
-            IconButton(
-              onPressed: () {},
-              tooltip: "Delete Note",
-              icon: const Icon(
-                Icons.delete_outline,
-                color: black,
-              ),
-            ),
+            widget.noteData.creationDate == null
+                ? Container()
+                : IconButton(
+                    onPressed: () {
+                      ref.read(notesNotifierProvider.notifier).deleteNote(widget.noteData).then((value) {
+                        snackBar(
+                          content: "Note Deleted",
+                          context: context,
+                          backgroundColor: Colors.green,
+                        );
+                        context.pushReplacementNamed(RouteName.HOMEPAGE);
+                      });
+                    },
+                    tooltip: "Delete Note",
+                    icon: const Icon(
+                      Icons.delete_outline,
+                      color: black,
+                    ),
+                  ),
           ],
         ),
         body: Column(
@@ -91,6 +131,7 @@ class _EditNotePageState extends ConsumerState<EditNotePage> {
                 right: 15,
               ),
               child: TextFormField(
+                controller: titleController,
                 cursorColor: black.withOpacity(0.3),
                 style: genStyle(ref).copyWith(
                   color: black,
@@ -183,7 +224,15 @@ class _EditNotePageState extends ConsumerState<EditNotePage> {
     );
   }
 
-  showCategoryModal(BuildContext context, WidgetRef ref) {
+  showCategoryModal(
+      {required BuildContext context,
+      required WidgetRef ref,
+      required String title,
+      required DateTime creation,
+      required DateTime modified,
+      required List<dynamic> body,
+      required String content,
+      required Color color}) {
     return showModalBottomSheet(
       isScrollControlled: true,
       isDismissible: true,
@@ -212,7 +261,7 @@ class _EditNotePageState extends ConsumerState<EditNotePage> {
                         height: 10,
                       ),
                       Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween, // Aligns children at start and end of the row
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           const Spacer(),
                           Align(
@@ -258,8 +307,11 @@ class _EditNotePageState extends ConsumerState<EditNotePage> {
                       Expanded(
                           child: ListView.builder(
                               physics: const BouncingScrollPhysics(),
-                              itemCount: 10,
+                              itemCount: categoriesW.length,
+                              padding: const EdgeInsets.only(bottom: 100),
                               itemBuilder: (context, index) {
+                                final item = categoriesW[index];
+
                                 return Column(
                                   children: [
                                     ListTile(
@@ -267,34 +319,33 @@ class _EditNotePageState extends ConsumerState<EditNotePage> {
                                       visualDensity: const VisualDensity(vertical: -4, horizontal: 0),
                                       minLeadingWidth: 0,
                                       title: Text(
-                                        "Cart",
+                                        item.title ?? "",
                                         style: genStyle(ref),
                                       ),
                                       trailing: GestureDetector(
                                         onTap: () {
                                           ref.read(checker.notifier).state = index;
+                                          ref.read(selectedCategory.notifier).state = item;
                                         },
-                                        child: Builder(builder: (context) {
-                                          return CircleAvatar(
-                                            radius: 12,
-                                            backgroundColor: black.withOpacity(0.2),
-                                            child: CircleAvatar(
-                                              radius: 10,
-                                              backgroundColor: check == index ? black : white,
-                                              child: Center(
-                                                child: check == index
-                                                    ? const Icon(
-                                                        Icons.check,
-                                                        color: white,
-                                                        size: 13,
-                                                      )
-                                                    : const CircleAvatar(
-                                                        backgroundColor: white,
-                                                      ),
-                                              ),
+                                        child: CircleAvatar(
+                                          radius: 12,
+                                          backgroundColor: black.withOpacity(0.2),
+                                          child: CircleAvatar(
+                                            radius: 10,
+                                            backgroundColor: check == index ? black : white,
+                                            child: Center(
+                                              child: check == index
+                                                  ? const Icon(
+                                                      Icons.check,
+                                                      color: white,
+                                                      size: 13,
+                                                    )
+                                                  : const CircleAvatar(
+                                                      backgroundColor: white,
+                                                    ),
                                             ),
-                                          );
-                                        }),
+                                          ),
+                                        ),
                                       ),
                                     ),
                                     Divider(
@@ -315,19 +366,61 @@ class _EditNotePageState extends ConsumerState<EditNotePage> {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Container(
-                          height: 40,
-                          margin: const EdgeInsets.only(left: 20, right: 20),
-                          decoration: BoxDecoration(
-                            color: black,
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          width: double.infinity,
-                          child: Center(
-                            child: Text(
-                              "Save",
-                              style: genStyle(ref).copyWith(
-                                color: white,
+                        GestureDetector(
+                          onTap: () {
+                            if (widget.noteData.creationDate == null) {
+                              final newNote = NoteDataModel(
+                                  title: title.isEmpty ? "No Title" : title,
+                                  content: content,
+                                  body: body,
+                                  category: ref.watch(selectedCategory),
+                                  creationDate: DateTime.now(),
+                                  modifiedDate: DateTime.now(),
+                                  colors: getRandomColor());
+                              ref.read(notesNotifierProvider.notifier).addNote(newNote).then((value) {
+                                ref.refresh(getNotesProvider);
+                                snackBar(
+                                  content: "Note Added Successfully",
+                                  context: context,
+                                  backgroundColor: Colors.green,
+                                );
+                                context.pushReplacementNamed(RouteName.HOMEPAGE);
+                              });
+                            } else {
+                              final newNote = NoteDataModel(
+                                  id: widget.noteData.id,
+                                  title: title.isEmpty ? "No Title" : title,
+                                  content: content,
+                                  body: body,
+                                  category: ref.watch(selectedCategory),
+                                  creationDate: widget.noteData.creationDate ?? DateTime.now(),
+                                  modifiedDate: DateTime.now(),
+                                  colors: getRandomColor());
+                              ref.read(notesNotifierProvider.notifier).updateNote(newNote).then((value) {
+                                ref.refresh(getNotesProvider);
+                                snackBar(
+                                  content: "Updated ${widget.noteData.title} Note",
+                                  context: context,
+                                  backgroundColor: Colors.green,
+                                );
+                                context.pushReplacementNamed(RouteName.HOMEPAGE);
+                              });
+                            }
+                          },
+                          child: Container(
+                            height: 40,
+                            margin: const EdgeInsets.only(left: 20, right: 20),
+                            decoration: BoxDecoration(
+                              color: black,
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            width: double.infinity,
+                            child: Center(
+                              child: Text(
+                                widget.noteData.creationDate == null ? "Save" : "Update changes",
+                                style: genStyle(ref).copyWith(
+                                  color: white,
+                                ),
                               ),
                             ),
                           ),
@@ -346,3 +439,7 @@ class _EditNotePageState extends ConsumerState<EditNotePage> {
 }
 
 final checker = StateProvider<int>((ref) => -1);
+final selectedCategory = StateProvider<CategoryModel?>(
+  (ref) => null,
+);
+final genNoteData = StateProvider<NoteDataModel?>((ref) => null);

@@ -46,6 +46,7 @@ class NoteDataModel {
       modifiedDate: modifiedDate ?? this.modifiedDate,
     );
   }
+
   String get encodedCategory => json.encode(category?.toMap());
 
 //refer here if having issues with getting notes data
@@ -64,13 +65,15 @@ class NoteDataModel {
   }
 
   factory NoteDataModel.fromMap(Map<String, dynamic> map) {
+   
+   
     return NoteDataModel(
       id: map['id']?.toInt(),
       colors: map['colors'] != null ? Color(map['colors']) : null,
       title: map['title'],
       content: map['content'],
       body: json.decode(map['body']),
-      category: jsonDecode(map['category']),
+      category: CategoryModel.fromMap(json.decode(map["category"])),
       creationDate: map['creationDate'] != null ? DateTime.fromMillisecondsSinceEpoch(map['creationDate']) : null,
       modifiedDate: map['modifiedDate'] != null ? DateTime.fromMillisecondsSinceEpoch(map['modifiedDate']) : null,
     );
@@ -88,27 +91,27 @@ class NoteDataModel {
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
-  
+
     return other is NoteDataModel &&
-      other.id == id &&
-      other.colors == colors &&
-      other.title == title &&
-      other.content == content &&
-      listEquals(other.body, body) &&
-      other.category == category &&
-      other.creationDate == creationDate &&
-      other.modifiedDate == modifiedDate;
+        other.id == id &&
+        other.colors == colors &&
+        other.title == title &&
+        other.content == content &&
+        listEquals(other.body, body) &&
+        other.category == category &&
+        other.creationDate == creationDate &&
+        other.modifiedDate == modifiedDate;
   }
 
   @override
   int get hashCode {
     return id.hashCode ^
-      colors.hashCode ^
-      title.hashCode ^
-      content.hashCode ^
-      body.hashCode ^
-      category.hashCode ^
-      creationDate.hashCode ^
-      modifiedDate.hashCode;
+        colors.hashCode ^
+        title.hashCode ^
+        content.hashCode ^
+        body.hashCode ^
+        category.hashCode ^
+        creationDate.hashCode ^
+        modifiedDate.hashCode;
   }
 }

@@ -5,7 +5,10 @@ import 'package:noteapp/constants/appColors.dart';
 import 'package:noteapp/constants/styleConst.dart';
 import 'package:noteapp/models/noteDataModel.dart';
 import 'package:noteapp/routes/routeNames.dart';
+import 'package:noteapp/screens/editNotePage.dart';
+import 'package:noteapp/services/noteDataManagement.dart';
 import 'package:noteapp/utils/dateLogics.dart';
+import 'package:noteapp/utils/snackbars.dart';
 import 'package:noteapp/widgets/spacing.dart';
 
 class NoteViewingPage extends ConsumerStatefulWidget {
@@ -36,6 +39,8 @@ class _NoteViewingPageState extends ConsumerState<NoteViewingPage> {
           actions: [
             IconButton(
               onPressed: () {
+                ref.read(genNoteData.notifier).state = widget.noteData;
+
                 context.pushReplacementNamed(
                   RouteName.EDITPAGE,
                   extra: widget.noteData,
@@ -56,7 +61,16 @@ class _NoteViewingPageState extends ConsumerState<NoteViewingPage> {
               ),
             ),
             IconButton(
-              onPressed: () {},
+              onPressed: () {
+                ref.read(notesNotifierProvider.notifier).deleteNote(widget.noteData).then((value) {
+                  snackBar(
+                    content: "Note Deleted",
+                    context: context,
+                    backgroundColor: Colors.green,
+                  );
+                  context.pushReplacementNamed(RouteName.HOMEPAGE);
+                });
+              },
               tooltip: "Delete Note",
               icon: const Icon(
                 Icons.delete_outline,

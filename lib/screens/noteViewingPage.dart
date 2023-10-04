@@ -154,7 +154,7 @@ class _NoteViewingPageState extends ConsumerState<NoteViewingPage> {
             Padding(
               padding: const EdgeInsets.only(left: 15, right: 15),
               child: Text(
-                "Modified: ${widget.noteData.modifiedDate}",
+                "Last modified: ${widget.noteData.modifiedDate}",
                 style: genStyle(ref).copyWith(
                   color: darkMode ? white : black.withOpacity(0.6),
                   fontStyle: FontStyle.italic,

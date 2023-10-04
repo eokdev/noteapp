@@ -13,6 +13,7 @@ import 'package:noteapp/models/noteDataModel.dart';
 import 'package:noteapp/routes/routeNames.dart';
 import 'package:noteapp/screens/editNotePage.dart';
 import 'package:noteapp/services/darkModeServices.dart';
+import 'package:noteapp/services/filterServices.dart';
 import 'package:noteapp/services/noteDataManagement.dart';
 import 'package:noteapp/utils/colorsLogic.dart';
 import 'package:noteapp/utils/dateLogics.dart';
@@ -36,7 +37,7 @@ class _HomePageState extends ConsumerState<HomePage> {
   @override
   Widget build(BuildContext context) {
     final darkMode = ref.watch(darkModeProvider);
-    final getNotes = ref.watch(getNotesProvider);
+    final getNotes = ref.watch(filteredNotesProvider);
     final year = DateFormat('yyyy').format(today);
     final month = DateFormat('MMMM').format(today);
     return SafeArea(
@@ -45,6 +46,7 @@ class _HomePageState extends ConsumerState<HomePage> {
           FocusScope.of(context).unfocus();
         },
         child: Scaffold(
+          resizeToAvoidBottomInset: true,
           backgroundColor: darkMode ? black : white,
           floatingActionButton: FloatingActionButton(
             onPressed: () {
@@ -156,6 +158,9 @@ class _HomePageState extends ConsumerState<HomePage> {
                 child: TextFormField(
                   cursorColor: black.withOpacity(0.3),
                   style: genStyle(ref).copyWith(color: black),
+                  onChanged: (value) {
+                    ref.read(filterSettingsProvider.notifier).updateSearchQuery(value);
+                  },
                   decoration: InputDecoration(
                     hintText: "Search for notes",
                     hintStyle: genStyle(ref).copyWith(
@@ -179,9 +184,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                 DateTime.now(),
                 initialSelectedDate: DateTime.now(),
                 onDateChange: (date) {
-                  setState(() {
-                    print(date);
-                  });
+                  ref.read(filterSettingsProvider.notifier).updateStartDate(date);
                 },
               ),
               sizedBoxHeight(10),
@@ -195,7 +198,12 @@ class _HomePageState extends ConsumerState<HomePage> {
                   children: List.generate(categories.length, (index) {
                     return GestureDetector(
                       onTap: () {
+                        FocusScope.of(context).unfocus();
                         ref.read(selectedIndex.notifier).state = index;
+
+                        ref.read(filterSettingsProvider.notifier).updateSelectedCategory(
+                              categories[index].title,
+                            );
                       },
                       child: Container(
                         margin: const EdgeInsets.only(left: 8, right: 8),
@@ -229,15 +237,15 @@ class _HomePageState extends ConsumerState<HomePage> {
                 return data.isEmpty
                     ? Expanded(
                         child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          Text(
-                            "You have no Note\nAdd a new note ➕",
-                            style: genStyle(ref),
-                          )
-                        ],
-                      ))
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Text(
+                          "You have no Note\nAdd a new note ➕",
+                          style: genStyle(ref),
+                        )
+                      ],
+                    ))
                     : Expanded(
                         child: GridView.builder(
                             padding: const EdgeInsets.only(left: 15, right: 15, top: 10, bottom: 10),
@@ -304,8 +312,8 @@ class _HomePageState extends ConsumerState<HomePage> {
                   children: [
                     Center(
                       child: SizedBox(
-                        height: 50,
-                        width: 50,
+                        height: 30,
+                        width: 30,
                         child: CircularProgressIndicator(
                           color: getRandomColor(),
                         ),
@@ -319,8 +327,8 @@ class _HomePageState extends ConsumerState<HomePage> {
                   children: [
                     Center(
                       child: SizedBox(
-                        height: 100,
-                        width: 100,
+                        height: 30,
+                        width: 30,
                         child: CircularProgressIndicator(
                           color: getRandomColor(),
                         ),

@@ -8,6 +8,7 @@ import 'package:noteapp/constants/styleConst.dart';
 import 'package:noteapp/models/noteDataModel.dart';
 import 'package:noteapp/routes/routeNames.dart';
 import 'package:noteapp/screens/editNotePage.dart';
+import 'package:noteapp/services/darkModeServices.dart';
 import 'package:noteapp/services/noteDataManagement.dart';
 import 'package:noteapp/services/pdfsharing.dart';
 import 'package:noteapp/utils/colorsLogic.dart';
@@ -40,6 +41,7 @@ class _NoteViewingPageState extends ConsumerState<NoteViewingPage> {
 
   @override
   Widget build(BuildContext context) {
+    final darkMode = ref.watch(darkModeProvider);
     return SafeArea(
       child: Scaffold(
         appBar: AppBar(
@@ -49,9 +51,9 @@ class _NoteViewingPageState extends ConsumerState<NoteViewingPage> {
             onPressed: () {
               context.pop();
             },
-            icon: const Icon(
+            icon: Icon(
               Icons.arrow_back_rounded,
-              color: black,
+              color: darkMode ? white : black,
             ),
           ),
           actions: [
@@ -65,9 +67,9 @@ class _NoteViewingPageState extends ConsumerState<NoteViewingPage> {
                 );
               },
               tooltip: "Edit Note",
-              icon: const Icon(
+              icon: Icon(
                 Icons.mode_edit_outlined,
-                color: black,
+                color: darkMode ? white : black,
               ),
             ),
             Consumer(builder: (context, ref, child) {
@@ -82,12 +84,16 @@ class _NoteViewingPageState extends ConsumerState<NoteViewingPage> {
                 }
               });
               return loading
-                  ? SizedBox(
-                      height: 20,
-                      width: 20,
-                      child: CircularProgressIndicator(
-                        color: getRandomColor(),
-                      ),
+                  ? Column(
+                      children: [
+                        SizedBox(
+                          height: 20,
+                          width: 20,
+                          child: CircularProgressIndicator(
+                            color: getRandomColor(),
+                          ),
+                        ),
+                      ],
                     )
                   : IconButton(
                       onPressed: () {
@@ -104,9 +110,9 @@ class _NoteViewingPageState extends ConsumerState<NoteViewingPage> {
                         );
                       },
                       tooltip: "Share",
-                      icon: const Icon(
+                      icon: Icon(
                         Icons.file_upload_outlined,
-                        color: black,
+                        color: darkMode ? white : black,
                       ),
                     );
             }),
@@ -122,14 +128,14 @@ class _NoteViewingPageState extends ConsumerState<NoteViewingPage> {
                 });
               },
               tooltip: "Delete Note",
-              icon: const Icon(
+              icon: Icon(
                 Icons.delete_outline,
-                color: black,
+                color: darkMode ? white : black,
               ),
             ),
           ],
         ),
-        backgroundColor: white,
+        backgroundColor: darkMode ? black : white,
         body: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -138,7 +144,7 @@ class _NoteViewingPageState extends ConsumerState<NoteViewingPage> {
               child: Text(
                 "Created: ${widget.noteData.creationDate}",
                 style: genStyle(ref).copyWith(
-                  color: black.withOpacity(0.6),
+                  color: darkMode ? white : black.withOpacity(0.6),
                   fontStyle: FontStyle.italic,
                   fontSize: 12,
                 ),
@@ -150,7 +156,7 @@ class _NoteViewingPageState extends ConsumerState<NoteViewingPage> {
               child: Text(
                 "Modified: ${widget.noteData.modifiedDate}",
                 style: genStyle(ref).copyWith(
-                  color: black.withOpacity(0.6),
+                  color: darkMode ? white : black.withOpacity(0.6),
                   fontStyle: FontStyle.italic,
                   fontSize: 12,
                 ),

@@ -51,9 +51,10 @@ class _EditNotePageState extends ConsumerState<EditNotePage> {
 
   @override
   Widget build(BuildContext context) {
-    final darkMode = ref.watch(darkModeProvider);
+ 
     return SafeArea(
       child: Scaffold(
+        backgroundColor: white,
         appBar: AppBar(
           elevation: 0,
           backgroundColor: Colors.transparent,
@@ -145,13 +146,13 @@ class _EditNotePageState extends ConsumerState<EditNotePage> {
                 decoration: InputDecoration(
                   hintText: "Enter note title",
                   hintStyle: genStyle(ref).copyWith(
-                    color: darkMode ? black : black.withOpacity(0.4),
+                    color:  black.withOpacity(0.4),
                   ),
                   filled: true,
-                  fillColor: darkMode ? white : black.withOpacity(0.05),
+                  fillColor:  black.withOpacity(0.05),
                   prefixIcon: Icon(
                     Icons.search,
-                    color: darkMode ? black : black.withOpacity(0.3),
+                    color: black.withOpacity(0.3),
                   ),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(15),

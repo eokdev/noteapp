@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:noteapp/constants/appColors.dart';
 
 import 'package:noteapp/routes/appRouter.dart';
+import 'package:noteapp/services/darkModeServices.dart';
 import 'package:noteapp/utils/colorsLogic.dart';
 
 void main() async {
@@ -11,19 +13,26 @@ void main() async {
   runApp(const ProviderScope(child: MyApp()));
 }
 
-class MyApp extends ConsumerWidget {
+class MyApp extends ConsumerStatefulWidget {
   const MyApp({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-       final randomColor = getRandomColor();
-    SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
-      statusBarColor: Colors.white,
-      statusBarIconBrightness: Brightness.dark,
+  ConsumerState<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends ConsumerState<MyApp> {
+  @override
+  Widget build(
+    BuildContext context,
+  ) {
+    final darkMode = ref.watch(darkModeProvider);
+    final randomColor = getRandomColor();
+    SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
+      statusBarColor: darkMode ? black : Colors.white,
+      statusBarIconBrightness: darkMode ? Brightness.light : Brightness.dark,
     ));
     return MaterialApp.router(
       title: 'Note Taking',
-     
       debugShowCheckedModeBanner: false,
       color: randomColor,
       supportedLocales: const [

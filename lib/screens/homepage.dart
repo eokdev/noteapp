@@ -61,9 +61,9 @@ class _HomePageState extends ConsumerState<HomePage> {
               );
               context.pushNamed(RouteName.EDITPAGE, extra: initialNote);
             },
-            backgroundColor: black,
-            child: const Center(
-              child: Icon(Icons.add),
+            backgroundColor: darkMode ? white.withOpacity(0.7) : black,
+            child:  Center(
+              child: Icon(Icons.add,color: darkMode?black:white,),
             ),
           ),
           body: Column(
@@ -167,7 +167,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                       color: darkMode ? black : black.withOpacity(0.4),
                     ),
                     filled: true,
-                    fillColor: darkMode ? white : black.withOpacity(0.05),
+                    fillColor: darkMode ? white.withOpacity(0.7) : black.withOpacity(0.05),
                     prefixIcon: Icon(
                       Icons.search,
                       color: darkMode ? black : black.withOpacity(0.3),
@@ -237,15 +237,15 @@ class _HomePageState extends ConsumerState<HomePage> {
                 return data.isEmpty
                     ? Expanded(
                         child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        Text(
-                          "You have no Note\nAdd a new note ➕",
-                          style: genStyle(ref),
-                        )
-                      ],
-                    ))
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Text(
+                            "You have no Note\nAdd a new note ➕",
+                            style: genStyle(ref),
+                          )
+                        ],
+                      ))
                     : Expanded(
                         child: GridView.builder(
                             padding: const EdgeInsets.only(left: 15, right: 15, top: 10, bottom: 10),

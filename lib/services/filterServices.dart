@@ -54,7 +54,8 @@ class FilterSettings {
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
 
-    return other is FilterSettings && other.startDate == startDate && other.selectedCategory == selectedCategory && other.searchQuery == searchQuery;
+    return other is FilterSettings && other.startDate == startDate && 
+    other.selectedCategory == selectedCategory && other.searchQuery == searchQuery;
   }
 
   @override
@@ -92,7 +93,11 @@ final filteredNotesProvider = FutureProvider<List<NoteDataModel>>((ref) async {
     final content = note.content ?? '';
 
     // filter for data
-    if (filterSettings.startDate != null && creationDate != null && creationDate.isBefore(filterSettings.startDate!)) {
+    if (filterSettings.startDate != null &&
+        creationDate != null &&
+        creationDate.isBefore(
+          filterSettings.startDate!,
+        )) {
       return false;
     }
 
@@ -106,7 +111,10 @@ final filteredNotesProvider = FutureProvider<List<NoteDataModel>>((ref) async {
 
     // filter for my search with content and title
     if (filterSettings.searchQuery != null &&
-        !(title.toLowerCase().contains(filterSettings.searchQuery!) || content.toLowerCase().contains(filterSettings.searchQuery!))) {
+        !(title.toLowerCase().contains(filterSettings.searchQuery!) ||
+            content.toLowerCase().contains(
+                  filterSettings.searchQuery!,
+                ))) {
       return false;
     }
 
